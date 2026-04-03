@@ -2,8 +2,16 @@ from fastapi import FastAPI, Depends
 from models import BirthDetails
 from core_math import calculate_base_positions
 from features.panchang import calculate_panchang
-
+from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI(title="Vedic Astrology API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # for dev
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.post("/api/v1/panchang")
 def get_panchang(birth: BirthDetails):

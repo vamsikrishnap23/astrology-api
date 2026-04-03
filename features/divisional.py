@@ -86,8 +86,13 @@ def calculate_single_varga(chart_data: dict, varga_type: int) -> dict:
     varga_chart = {}
     
     for key, data in chart_data.items():
-        if key == "Julian_Day": continue
-            
+        if key in ("Julian_Day", "Houses"):  # Houses is a nested dict, not a planet-like entry
+            continue
+
+        if not isinstance(data, dict) or "longitude_360" not in data:
+            # Skip entries that are not convertible planetary/ascendant bodies
+            continue
+
         longitude = data["longitude_360"]
         base_sign = int(longitude / 30)
         degree_in_sign = longitude % 30

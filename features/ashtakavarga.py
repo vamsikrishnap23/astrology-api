@@ -1,5 +1,9 @@
 # The Master Rulebook for Bhinna Ashtakavarga (BAV)
 # Standard Parashari rules: 1-based indexing (1st house, 2nd house)
+# The Master Rulebook for Bhinna Ashtakavarga (BAV)
+# Standard Parashari rules: 1-based indexing (1st house, 2nd house)
+# The Master Rulebook for Bhinna Ashtakavarga (BAV)
+# Strict BPHS (Parashari) rules: 1-based indexing
 ASHTAKAVARGA_RULES = {
     "Sun": {
         "Sun": [1, 2, 4, 7, 8, 9, 10, 11],
@@ -24,7 +28,7 @@ ASHTAKAVARGA_RULES = {
     "Mars": {
         "Sun": [3, 5, 6, 10, 11],
         "Moon": [3, 6, 11],
-        "Mars": [1, 2, 4, 7, 8, 9, 10, 11],
+        "Mars": [1, 2, 4, 7, 8, 10, 11],
         "Mercury": [3, 5, 6, 11],
         "Jupiter": [6, 10, 11, 12],
         "Venus": [6, 8, 11, 12],
@@ -54,7 +58,7 @@ ASHTAKAVARGA_RULES = {
     "Venus": {
         "Sun": [8, 11, 12],
         "Moon": [1, 2, 3, 4, 5, 8, 9, 11, 12],
-        "Mars": [3, 4, 6, 9, 11, 12],
+        "Mars": [3, 5, 6, 9, 11, 12], # FIXED: 4 changed to 5
         "Mercury": [3, 5, 6, 9, 11],
         "Jupiter": [5, 8, 9, 10, 11],
         "Venus": [1, 2, 3, 4, 5, 8, 9, 10, 11],
@@ -71,7 +75,6 @@ ASHTAKAVARGA_RULES = {
         "Saturn": [3, 5, 6, 11],
         "Ascendant": [1, 3, 4, 6, 10, 11]
     }
-    # Note: Add Mercury, Jupiter, Venus, Saturn rules here using the same structure
 }
 
 def calculate_single_bav(chart_data: dict, target_planet: str) -> list:
