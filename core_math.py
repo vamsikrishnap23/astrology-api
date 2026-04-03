@@ -13,8 +13,8 @@ def calculate_base_positions(birth: BirthDetails) -> dict:
     swe.set_topo(birth.lon, birth.lat, 0.0)
     
     # 1. THE FIX: Add swe.FLG_SPEED to force daily motion calculations
-    flags = swe.FLG_SWIEPH | swe.FLG_SIDEREAL | swe.FLG_TOPOCTR | swe.FLG_SPEED
-
+    # flags = swe.FLG_SWIEPH | swe.FLG_SIDEREAL | swe.FLG_TOPOCTR | swe.FLG_SPEED
+    flags = swe.FLG_SWIEPH | swe.FLG_SIDEREAL | swe.FLG_SPEED
     chart_data = {"Julian_Day": julian_day}
 
     planets = {

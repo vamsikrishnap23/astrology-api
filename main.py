@@ -33,3 +33,22 @@ def get_varga_charts(birth: BirthDetails):
         "status": "success",
         "data": all_varga_data
     }
+
+
+from features.dashas import calculate_dashas
+
+@app.post("/api/v1/chart/dashas")
+def get_vimshottari_dashas(birth: BirthDetails):
+    """
+    Returns the complete 120-year Vimshottari Mahadasha timeline.
+    """
+    # 1. Get exact base longitudes (we only need the Moon, but we reuse the core engine)
+    base_positions = calculate_base_positions(birth)
+    
+    # 2. Run the Dasha engine
+    dasha_timeline = calculate_dashas(base_positions)
+    
+    return {
+        "status": "success",
+        "data": dasha_timeline
+    }
