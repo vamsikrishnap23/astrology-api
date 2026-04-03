@@ -22,3 +22,7 @@ class BirthDetails(BaseModel):
 class TransitRequest(BaseModel):
     birth: BirthDetails
     transit: BirthDetails
+
+class MatchRequest(BaseModel):
+    boy: BirthDetails
+    girl: BirthDetails

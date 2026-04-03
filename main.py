@@ -126,3 +126,49 @@ def get_transit_chart(request: TransitRequest):
             "Transit_Relations": transit_relations
         }
     }
+
+from features.progressions import calculate_progressed_chart
+from features.transits import calculate_transit_relations
+
+@app.post("/api/v1/chart/progression")
+def get_secondary_progressions(request: TransitRequest):
+    """
+    Returns the Progressed Chart and its relation to the Natal Chart.
+    """
+    # 1. Get the base natal chart
+    natal_positions = calculate_base_positions(request.birth)
+    
+    # 2. Get the mathematically progressed chart
+    progressed_positions = calculate_progressed_chart(request.birth, request.transit)
+    
+    # 3. Optional but highly recommended: Map the Progressed planets against the Natal houses!
+    progression_relations = calculate_transit_relations(natal_positions, progressed_positions)
+    
+    return {
+        "status": "success",
+        "data": {
+            "Natal_Chart": natal_positions,
+            "Progressed_Chart": progressed_positions,
+            "Progression_Relations": progression_relations
+        }
+    }
+
+from models import MatchRequest
+from features.ashtakootam import calculate_ashtakootam
+
+@app.post("/api/v1/match/ashtakootam")
+def get_compatibility_score(request: MatchRequest):
+    """
+    Returns the complete 36-point Kundali Milan scorecard.
+    """
+    # 1. Calculate physical charts for both individuals
+    boy_positions = calculate_base_positions(request.boy)
+    girl_positions = calculate_base_positions(request.girl)
+    
+    # 2. Run the Ashtakootam master controller
+    match_report = calculate_ashtakootam(boy_positions, girl_positions)
+    
+    return {
+        "status": "success",
+        "data": match_report
+    }
