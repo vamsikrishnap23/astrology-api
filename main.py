@@ -182,15 +182,28 @@ def get_compatibility_score(request: MatchRequest):
     }
 
 from features.shadbala import calculate_shadbala
-
 @app.post("/api/v1/chart/shadbala")
 def get_shadbala(birth: BirthDetails):
     """
     Returns the complete Six-Fold Planetary Strength (Shadbala).
-    Currently implemented: Uchcha Bala.
     """
     base_positions = calculate_base_positions(birth)
-    shadbala_report = calculate_shadbala(base_positions)
+    varga_positions = calculate_all_vargas(base_positions)
+    
+    # Convert string TZ to numeric offset for exact solar math
+    tz_map = {"IST": 5.5, "UTC": 0.0, "EST": -5.0, "CST": -6.0, "PST": -8.0}
+    offset = tz_map.get(birth.tz, 0.0) 
+    
+    # --- THE FIX: Ensure 'jd' is explicitly included here ---
+    birth_time = {
+        "hour": birth.hour, 
+        "minute": birth.minute,
+        "lon": birth.lon,
+        "tz_offset": offset,
+        "jd": base_positions["Julian_Day"] # This is required for Ahargana!
+    }
+    
+    shadbala_report = calculate_shadbala(base_positions, varga_positions, birth_time)
     
     return {
         "status": "success",
