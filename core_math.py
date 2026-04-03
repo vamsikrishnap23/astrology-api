@@ -9,18 +9,25 @@ def calculate_base_positions(birth: BirthDetails) -> dict:
     )
 
     julian_day = swe.julday(utc_year, utc_month, utc_day, utc_decimal_hour)
-    swe.set_sid_mode(swe.SIDM_LAHIRI)
-    swe.set_topo(birth.lon, birth.lat, 0.0)
     
-    # 1. THE FIX: Add swe.FLG_SPEED to force daily motion calculations
-    # flags = swe.FLG_SWIEPH | swe.FLG_SIDEREAL | swe.FLG_TOPOCTR | swe.FLG_SPEED
+    # 1. Apply Dynamic Ayanamsa
+    if birth.ayanamsa == "kp":
+        swe.set_sid_mode(swe.SIDM_KRISHNAMURTI)
+    else:
+        swe.set_sid_mode(swe.SIDM_LAHIRI)
+
+    # Use Geocentric for standard astrological compatibility
     flags = swe.FLG_SWIEPH | swe.FLG_SIDEREAL | swe.FLG_SPEED
+
     chart_data = {"Julian_Day": julian_day}
+
+    # 2. Apply Dynamic Node Type
+    rahu_flag = swe.TRUE_NODE if birth.node_type == "true" else swe.MEAN_NODE
 
     planets = {
         "Sun": swe.SUN, "Moon": swe.MOON, "Mars": swe.MARS,
         "Mercury": swe.MERCURY, "Jupiter": swe.JUPITER, "Venus": swe.VENUS,
-        "Saturn": swe.SATURN, "Rahu": swe.TRUE_NODE 
+        "Saturn": swe.SATURN, "Rahu": rahu_flag 
     }
 
     # 2. Standard Planets
@@ -37,8 +44,16 @@ def calculate_base_positions(birth: BirthDetails) -> dict:
     # Directly copy the exact retrograde boolean from Rahu
     chart_data["Ketu"]["is_retrograde"] = chart_data["Rahu"].get("is_retrograde", False)
 
-    # 4. Ascendant
+    # 4. Calculate Ascendant AND 12 House Cusps
+    # 'P' stands for Placidus, standard for KP and Advanced tables
     cusps, ascmc = swe.houses_ex(julian_day, birth.lat, birth.lon, b'P', flags)
+    
     chart_data["Ascendant"] = format_longitude(ascmc[0])
+    
+    # Store all 12 house cusps
+    chart_data["Houses"] = {}
+    # Python tuples are 0-indexed (0 to 11 represents House 1 to House 12)
+    for i in range(12):
+        chart_data["Houses"][f"House_{i+1}"] = format_longitude(cusps[i])
 
     return chart_data

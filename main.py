@@ -52,3 +52,19 @@ def get_vimshottari_dashas(birth: BirthDetails):
         "status": "success",
         "data": dasha_timeline
     }
+
+
+from features.advanced_tables import build_advanced_tables
+
+@app.post("/api/v1/chart/advanced-tables")
+def get_advanced_tables(birth: BirthDetails):
+    """
+    Returns the Planetary and House tables including Sign, Star, Sub, and Sub-Sub Lords.
+    """
+    base_positions = calculate_base_positions(birth)
+    advanced_tables = build_advanced_tables(base_positions)
+    
+    return {
+        "status": "success",
+        "data": advanced_tables
+    }
