@@ -6,9 +6,10 @@ ZODIAC_SIGNS = [
     "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"
 ]
 
-def format_longitude(decimal_degree: float) -> dict:
+def format_longitude(decimal_degree: float, speed: float = None) -> dict:
     """
     Converts a raw 360-degree floating point into structured astrological data.
+    Optionally calculates retrograde status if speed is provided.
     """
     sign_index = int(decimal_degree / 30)
     sign_name = ZODIAC_SIGNS[sign_index]
@@ -20,7 +21,7 @@ def format_longitude(decimal_degree: float) -> dict:
     m = int(m_decimal)
     s = (m_decimal - m) * 60
 
-    return {
+    result = {
         "longitude_360": round(decimal_degree, 6),
         "sign_index": sign_index,  
         "sign_name": sign_name,
@@ -28,6 +29,12 @@ def format_longitude(decimal_degree: float) -> dict:
         "minute": m,
         "second": round(s, 2)
     }
+    
+    # If speed is provided, check if it's negative (moving backward)
+    if speed is not None:
+        result["is_retrograde"] = bool(speed < 0)
+        
+    return result
 
 
 def jd_to_utc_time(jd: float) -> str:
