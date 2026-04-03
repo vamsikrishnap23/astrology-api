@@ -68,3 +68,37 @@ def get_advanced_tables(birth: BirthDetails):
         "status": "success",
         "data": advanced_tables
     }
+from features.ashtakavarga import get_all_bavs, calculate_sav, get_all_trikona, get_all_ekadhipatya
+
+@app.post("/api/v1/chart/ashtakavarga")
+def get_ashtakavarga_charts(birth: BirthDetails):
+    """
+    Returns the complete Ashtakavarga matrix: Raw BAV/SAV and both Reductions.
+    """
+    base_positions = calculate_base_positions(birth)
+    
+    # 1. Raw Calculations (Rekha)
+    bav_data = get_all_bavs(base_positions)
+    sav_data = calculate_sav(bav_data)
+    total_bindus = sum(sav_data)
+    
+    # 2. First Reduction (Trikona Shodhana)
+    trikona_data = get_all_trikona(bav_data)
+    trikona_sav = calculate_sav(trikona_data) 
+    
+    # 3. Second Reduction (Ekadhipatya Shodhana)
+    ekadhi_data = get_all_ekadhipatya(trikona_data, base_positions)
+    ekadhi_sav = calculate_sav(ekadhi_data)
+    
+    return {
+        "status": "success",
+        "data": {
+            "BAV": bav_data,
+            "SAV": sav_data,
+            "Trikona": trikona_data,
+            "Trikona_SAV": trikona_sav,
+            "Ekadhipatya": ekadhi_data,
+            "Ekadhipatya_SAV": ekadhi_sav,
+            "Total_Bindus": total_bindus
+        }
+    }
