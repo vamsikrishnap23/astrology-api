@@ -102,3 +102,27 @@ def get_ashtakavarga_charts(birth: BirthDetails):
             "Total_Bindus": total_bindus
         }
     }
+
+from models import TransitRequest
+from features.transits import calculate_transit_relations
+
+@app.post("/api/v1/chart/transit")
+def get_transit_chart(request: TransitRequest):
+    """
+    Returns the Natal Chart, Transit Chart, and their relative house relationships.
+    """
+    # 1. Calculate both physical charts using the core engine
+    natal_positions = calculate_base_positions(request.birth)
+    transit_positions = calculate_base_positions(request.transit)
+    
+    # 2. Map the transits against the natal reference points
+    transit_relations = calculate_transit_relations(natal_positions, transit_positions)
+    
+    return {
+        "status": "success",
+        "data": {
+            "Natal_Chart": natal_positions,
+            "Transit_Chart": transit_positions,
+            "Transit_Relations": transit_relations
+        }
+    }

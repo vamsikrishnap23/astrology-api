@@ -17,3 +17,8 @@ class BirthDetails(BaseModel):
     # NEW: Advanced Calculation Toggles
     ayanamsa: Literal["lahiri", "kp"] = Field("lahiri", description="Ayanamsa system")
     node_type: Literal["true", "mean"] = Field("true", description="Rahu/Ketu calculation")
+    
+
+class TransitRequest(BaseModel):
+    birth: BirthDetails
+    transit: BirthDetails
