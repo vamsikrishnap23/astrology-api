@@ -180,3 +180,19 @@ def get_compatibility_score(request: MatchRequest):
         "status": "success",
         "data": match_report
     }
+
+from features.shadbala import calculate_shadbala
+
+@app.post("/api/v1/chart/shadbala")
+def get_shadbala(birth: BirthDetails):
+    """
+    Returns the complete Six-Fold Planetary Strength (Shadbala).
+    Currently implemented: Uchcha Bala.
+    """
+    base_positions = calculate_base_positions(birth)
+    shadbala_report = calculate_shadbala(base_positions)
+    
+    return {
+        "status": "success",
+        "data": shadbala_report
+    }
