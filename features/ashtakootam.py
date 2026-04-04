@@ -1,5 +1,5 @@
 # features/ashtakootam.py
-
+from features.translator import translate
 # ==========================================
 # 1. THE CLASSICAL MATRICES (B.V. Raman)
 # ==========================================
@@ -7,7 +7,7 @@
 GANA_MAP = [
     [6, 5, 1],
     [6, 6, 0],
-    [1, 0, 6]  # Rakshasa Boy + Deva Girl = 1 (Standard accepted variant)
+    [1, 0, 6]
 ]
 
 VASHYA_MAP = [
@@ -109,7 +109,7 @@ def calc_bhakoot(boy_sign: int, girl_sign: int) -> float:
         return 7.0
     return 0.0
 
-def calculate_ashtakootam(boy_chart: dict, girl_chart: dict) -> dict:
+def calculate_ashtakootam(boy_chart: dict, girl_chart: dict, lang: str = "en") -> dict:
     
     boy_sign = boy_chart["Moon"]["sign_index"]
     girl_sign = girl_chart["Moon"]["sign_index"]
@@ -125,49 +125,66 @@ def calculate_ashtakootam(boy_chart: dict, girl_chart: dict) -> dict:
     b_nadi, g_nadi = NAK_TO_NADI[boy_nak], NAK_TO_NADI[girl_nak]
     b_lord, g_lord = SIGN_LORDS[boy_sign], SIGN_LORDS[girl_sign]
 
-    # Use the TRUE friendship function
     b_lord_feels = get_true_friendship(b_lord, g_lord)
     g_lord_feels = get_true_friendship(g_lord, b_lord)
 
+    # <-- WRAPPED ALL STRING OUTPUTS IN TRANSLATE() -->
     match_table = [
         {
-            "Attribute": "Varna", "Desc": "Natural Refinement / Work",
-            "Male": VARNA_STR[b_varna], "Female": VARNA_STR[g_varna],
-            "Outof": 1, "Received": 1.0 if b_varna <= g_varna else 0.0 # Lower index = Higher caste
+            "Attribute": translate("Varna", "koota_attr", lang), 
+            "Desc": translate("Natural Refinement / Work", "koota_desc", lang),
+            "Male": translate(VARNA_STR[b_varna], "varna", lang), 
+            "Female": translate(VARNA_STR[g_varna], "varna", lang),
+            "Outof": 1, "Received": 1.0 if b_varna <= g_varna else 0.0
         },
         {
-            "Attribute": "Vashya", "Desc": "Innate Giving / Attraction towards each other",
-            "Male": VASHYA_STR[b_vashya], "Female": VASHYA_STR[g_vashya],
+            "Attribute": translate("Vashya", "koota_attr", lang), 
+            "Desc": translate("Innate Giving / Attraction towards each other", "koota_desc", lang),
+            "Male": translate(VASHYA_STR[b_vashya], "vashya", lang), 
+            "Female": translate(VASHYA_STR[g_vashya], "vashya", lang),
             "Outof": 2, "Received": VASHYA_MAP[b_vashya][g_vashya]
         },
         {
-            "Attribute": "Tara", "Desc": "Comfort - Prosperity - Health",
-            "Male": NAKSHATRAS[boy_nak], "Female": NAKSHATRAS[girl_nak],
+            "Attribute": translate("Tara", "koota_attr", lang), 
+            "Desc": translate("Comfort - Prosperity - Health", "koota_desc", lang),
+            "Male": translate(NAKSHATRAS[boy_nak], "nakshatra", lang), 
+            "Female": translate(NAKSHATRAS[girl_nak], "nakshatra", lang),
             "Outof": 3, "Received": calc_tara(boy_nak, girl_nak)
         },
         {
-            "Attribute": "Yoni", "Desc": "Intimate Physical",
-            "Male": YONI_STR[b_yoni], "Female": YONI_STR[g_yoni],
+            "Attribute": translate("Yoni", "koota_attr", lang), 
+            "Desc": translate("Intimate Physical", "koota_desc", lang),
+            "Male": translate(YONI_STR[b_yoni], "yoni", lang), 
+            "Female": translate(YONI_STR[g_yoni], "yoni", lang),
             "Outof": 4, "Received": float(YONI_MAP[b_yoni][g_yoni])
         },
         {
-            "Attribute": "Maitri", "Desc": "Friendship",
-            "Male": b_lord, "Female": g_lord,
+            "Attribute": translate("Maitri", "koota_attr", lang), 
+            "Desc": translate("Friendship", "koota_desc", lang),
+            "Male": translate(b_lord, "planet", lang), 
+            "Female": translate(g_lord, "planet", lang),
             "Outof": 5, "Received": calc_graha_maitri(b_lord_feels, g_lord_feels)
         },
         {
-            "Attribute": "Gan", "Desc": "Temperament",
-            "Male": GANA_STR[b_gana], "Female": GANA_STR[g_gana],
+            "Attribute": translate("Gan", "koota_attr", lang), 
+            "Desc": translate("Temperament", "koota_desc", lang),
+            "Male": translate(GANA_STR[b_gana], "gana", lang), 
+            "Female": translate(GANA_STR[g_gana], "gana", lang),
             "Outof": 6, "Received": float(GANA_MAP[b_gana][g_gana])
         },
         {
-            "Attribute": "Bhakut", "Desc": "Constructive Ability / Society and Couple",
-            "Male": boy_chart["Moon"]["sign_name"], "Female": girl_chart["Moon"]["sign_name"],
+            "Attribute": translate("Bhakut", "koota_attr", lang), 
+            "Desc": translate("Constructive Ability / Society and Couple", "koota_desc", lang),
+            # Already translated via core_math.py in step 1!
+            "Male": boy_chart["Moon"]["sign_name"], 
+            "Female": girl_chart["Moon"]["sign_name"],
             "Outof": 7, "Received": calc_bhakoot(boy_sign, girl_sign)
         },
         {
-            "Attribute": "Nadi", "Desc": "Progeny / Excess",
-            "Male": NADI_STR[b_nadi], "Female": NADI_STR[g_nadi],
+            "Attribute": translate("Nadi", "koota_attr", lang), 
+            "Desc": translate("Progeny / Excess", "koota_desc", lang),
+            "Male": translate(NADI_STR[b_nadi], "nadi", lang), 
+            "Female": translate(NADI_STR[g_nadi], "nadi", lang),
             "Outof": 8, "Received": 0.0 if b_nadi == g_nadi else 8.0
         }
     ]

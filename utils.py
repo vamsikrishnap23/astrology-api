@@ -1,12 +1,12 @@
 import swisseph as swe
-
+from features.translator import translate
 # Fixed list of Zodiac signs mapping to the 0-11 index
 ZODIAC_SIGNS = [
     "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", 
     "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"
 ]
 
-def format_longitude(decimal_degree: float, speed: float = None) -> dict:
+def format_longitude(decimal_degree: float, speed: float = None, lang: str = "en") -> dict:
     """
     Converts a raw 360-degree floating point into structured astrological data.
     Optionally calculates retrograde status if speed is provided.
@@ -24,7 +24,7 @@ def format_longitude(decimal_degree: float, speed: float = None) -> dict:
     result = {
         "longitude_360": round(decimal_degree, 6),
         "sign_index": sign_index,  
-        "sign_name": sign_name,
+        "sign_name": translate(sign_name, "zodiac", lang),
         "degree": d,
         "minute": m,
         "second": round(s, 2)

@@ -4,6 +4,8 @@
 # Standard Parashari rules: 1-based indexing (1st house, 2nd house)
 # The Master Rulebook for Bhinna Ashtakavarga (BAV)
 # Strict BPHS (Parashari) rules: 1-based indexing
+from features.translator import translate
+
 ASHTAKAVARGA_RULES = {
     "Sun": {
         "Sun": [1, 2, 4, 7, 8, 9, 10, 11],
@@ -94,7 +96,7 @@ def calculate_single_bav(chart_data: dict, target_planet: str) -> list:
             
     return bav_array
 
-def get_all_bavs(chart_data: dict) -> dict:
+def get_all_bavs(chart_data: dict, lang: str = "en") -> dict:
     """
     Generates a dictionary containing the BAV arrays for all 7 standard planets.
     """
@@ -104,7 +106,8 @@ def get_all_bavs(chart_data: dict) -> dict:
     planets = ["Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn"]
     
     for planet in planets:
-        all_bavs[planet] = calculate_single_bav(chart_data, planet)
+        translated_key = translate(planet, "planet", lang)
+        all_bavs[translated_key] = calculate_single_bav(chart_data, planet)
         
     return all_bavs
 

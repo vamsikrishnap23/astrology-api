@@ -1,3 +1,6 @@
+# features/lords.py
+from features.translator import translate # <-- ADDED IMPORT
+
 DASHA_LORDS = [
     ("Ketu", 7.0), ("Venus", 20.0), ("Sun", 6.0), ("Moon", 10.0),
     ("Mars", 7.0), ("Rahu", 18.0), ("Jupiter", 16.0), ("Saturn", 19.0),
@@ -17,7 +20,8 @@ NAKSHATRAS = [
     "Dhanishta", "Shatabhisha", "Purva Bhadrapada", "Uttara Bhadrapada", "Revati"
 ]
 
-def get_advanced_lords(longitude: float) -> dict:
+# <-- ADDED 'lang' PARAMETER -->
+def get_advanced_lords(longitude: float, lang: str = "en") -> dict:
     # 1. Sign Lord (SiL)
     sign_index = int(longitude / 30.0)
     sil = SIGN_LORDS[sign_index]
@@ -28,7 +32,10 @@ def get_advanced_lords(longitude: float) -> dict:
     nak_index = int(longitude / nak_length)
     
     padam = int(degrees_in_nak / (nak_length / 4.0)) + 1
-    star_format = f"{NAKSHATRAS[nak_index]} - {padam}"
+    
+    # <-- TRANSLATED NAKSHATRA -->
+    translated_nak = translate(NAKSHATRAS[nak_index], "nakshatra", lang)
+    star_format = f"{translated_nak} - {padam}"
     
     stl_index = nak_index % 9
     stl = DASHA_LORDS[stl_index][0]
@@ -75,11 +82,12 @@ def get_advanced_lords(longitude: float) -> dict:
         sssl_passed += sssl_span
         current_index = (current_index + 1) % 9
 
+    # <-- APPLIED PLANETARY TRANSLATIONS TO ALL LORDS -->
     return {
         "Star": star_format,
-        "SiL": sil,
-        "StL": stl,
-        "SL": sl,
-        "SSL": ssl,
-        "SSSL": sssl
+        "SiL": translate(sil, "planet", lang),
+        "StL": translate(stl, "planet", lang),
+        "SL": translate(sl, "planet", lang),
+        "SSL": translate(ssl, "planet", lang),
+        "SSSL": translate(sssl, "planet", lang)
     }

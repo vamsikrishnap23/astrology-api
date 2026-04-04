@@ -25,18 +25,20 @@ def get_panchang(birth: BirthDetails):
 
 from features.divisional import calculate_all_vargas
 
+# ... existing imports ...
+from features.divisional import calculate_all_vargas
+
 @app.post("/api/v1/chart/vargas")
 def get_varga_charts(birth: BirthDetails):
     """
     Returns the D-1 Rasi chart alongside D-2, D-3, D-4, D-7, D-9, D-10, D-12, and D-60 charts.
     """
-    # 1. Get exact base longitudes
-    base_positions = calculate_base_positions(birth)
+    # Core engine handles language internally now
+    base_positions = calculate_base_positions(birth) 
     
-    # 2. Run the Master Varga Engine
-    all_varga_data = calculate_all_vargas(base_positions)
+    # Pass language specifically to the Varga generator
+    all_varga_data = calculate_all_vargas(base_positions, birth.lang) 
     
-    # 3. Return the comprehensive payload
     return {
         "status": "success",
         "data": all_varga_data
@@ -50,11 +52,11 @@ def get_vimshottari_dashas(birth: BirthDetails):
     """
     Returns the complete 120-year Vimshottari Mahadasha timeline.
     """
-    # 1. Get exact base longitudes (we only need the Moon, but we reuse the core engine)
+    # 1. Get exact base longitudes
     base_positions = calculate_base_positions(birth)
     
-    # 2. Run the Dasha engine
-    dasha_timeline = calculate_dashas(base_positions)
+    # 2. Run the Dasha engine (Now passing language parameter)
+    dasha_timeline = calculate_dashas(base_positions, birth.lang) # <-- PASSED LANG
     
     return {
         "status": "success",
@@ -62,6 +64,7 @@ def get_vimshottari_dashas(birth: BirthDetails):
     }
 
 
+# main.py
 from features.advanced_tables import build_advanced_tables
 
 @app.post("/api/v1/chart/advanced-tables")
@@ -70,31 +73,32 @@ def get_advanced_tables(birth: BirthDetails):
     Returns the Planetary and House tables including Sign, Star, Sub, and Sub-Sub Lords.
     """
     base_positions = calculate_base_positions(birth)
-    advanced_tables = build_advanced_tables(base_positions)
+    
+    # <-- PASSED 'lang' FROM BIRTH PAYLOAD -->
+    advanced_tables = build_advanced_tables(base_positions, birth.lang)
     
     return {
         "status": "success",
         "data": advanced_tables
     }
+
+
 from features.ashtakavarga import get_all_bavs, calculate_sav, get_all_trikona, get_all_ekadhipatya
 
 @app.post("/api/v1/chart/ashtakavarga")
 def get_ashtakavarga_charts(birth: BirthDetails):
-    """
-    Returns the complete Ashtakavarga matrix: Raw BAV/SAV and both Reductions.
-    """
+    """Returns the complete Ashtakavarga matrix: Raw BAV/SAV and both Reductions."""
     base_positions = calculate_base_positions(birth)
     
-    # 1. Raw Calculations (Rekha)
-    bav_data = get_all_bavs(base_positions)
+    # <-- PASSED 'lang' (Translations cascade through the rest automatically!) -->
+    bav_data = get_all_bavs(base_positions, birth.lang)
+    
     sav_data = calculate_sav(bav_data)
     total_bindus = sum(sav_data)
     
-    # 2. First Reduction (Trikona Shodhana)
     trikona_data = get_all_trikona(bav_data)
     trikona_sav = calculate_sav(trikona_data) 
     
-    # 3. Second Reduction (Ekadhipatya Shodhana)
     ekadhi_data = get_all_ekadhipatya(trikona_data, base_positions)
     ekadhi_sav = calculate_sav(ekadhi_data)
     
@@ -116,15 +120,13 @@ from features.transits import calculate_transit_relations
 
 @app.post("/api/v1/chart/transit")
 def get_transit_chart(request: TransitRequest):
-    """
-    Returns the Natal Chart, Transit Chart, and their relative house relationships.
-    """
-    # 1. Calculate both physical charts using the core engine
+    """Returns the Natal Chart, Transit Chart, and their relative house relationships."""
+    # Base charts will auto-translate because we updated core_math.py!
     natal_positions = calculate_base_positions(request.birth)
     transit_positions = calculate_base_positions(request.transit)
     
-    # 2. Map the transits against the natal reference points
-    transit_relations = calculate_transit_relations(natal_positions, transit_positions)
+    # <-- PASS LANGUAGE DOWN TO RELATIONS ENGINE -->
+    transit_relations = calculate_transit_relations(natal_positions, transit_positions, request.lang)
     
     return {
         "status": "success",
@@ -140,17 +142,12 @@ from features.transits import calculate_transit_relations
 
 @app.post("/api/v1/chart/progression")
 def get_secondary_progressions(request: TransitRequest):
-    """
-    Returns the Progressed Chart and its relation to the Natal Chart.
-    """
-    # 1. Get the base natal chart
+    """Returns the Progressed Chart and its relation to the Natal Chart."""
     natal_positions = calculate_base_positions(request.birth)
-    
-    # 2. Get the mathematically progressed chart
     progressed_positions = calculate_progressed_chart(request.birth, request.transit)
     
-    # 3. Optional but highly recommended: Map the Progressed planets against the Natal houses!
-    progression_relations = calculate_transit_relations(natal_positions, progressed_positions)
+    # <-- PASS LANGUAGE DOWN TO RELATIONS ENGINE -->
+    progression_relations = calculate_transit_relations(natal_positions, progressed_positions, request.lang)
     
     return {
         "status": "success",
@@ -169,12 +166,16 @@ def get_compatibility_score(request: MatchRequest):
     """
     Returns the complete 36-point Kundali Milan scorecard.
     """
-    # 1. Calculate physical charts for both individuals
+    # 1. Ensure the individual birth payloads inherit the global request language
+    request.boy.lang = request.lang
+    request.girl.lang = request.lang
+    
+    # 2. Calculate physical charts for both individuals
     boy_positions = calculate_base_positions(request.boy)
     girl_positions = calculate_base_positions(request.girl)
     
-    # 2. Run the Ashtakootam master controller
-    match_report = calculate_ashtakootam(boy_positions, girl_positions)
+    # 3. Run the Ashtakootam master controller (passing language down)
+    match_report = calculate_ashtakootam(boy_positions, girl_positions, request.lang)
     
     return {
         "status": "success",
@@ -182,33 +183,27 @@ def get_compatibility_score(request: MatchRequest):
     }
 
 from features.shadbala import calculate_shadbala
+
+
 @app.post("/api/v1/chart/shadbala")
 def get_shadbala(birth: BirthDetails):
-    """
-    Returns the complete Six-Fold Planetary Strength (Shadbala).
-    """
+    """Returns the complete Six-Fold Planetary Strength (Shadbala)."""
     base_positions = calculate_base_positions(birth)
-    varga_positions = calculate_all_vargas(base_positions)
+    varga_positions = calculate_all_vargas(base_positions) # Core automatically handles lang
     
-    # Convert string TZ to numeric offset for exact solar math
     tz_map = {"IST": 5.5, "UTC": 0.0, "EST": -5.0, "CST": -6.0, "PST": -8.0}
     offset = tz_map.get(birth.tz, 0.0) 
     
-    # --- THE FIX: Ensure 'jd' is explicitly included here ---
     birth_time = {
-        "hour": birth.hour, 
-        "minute": birth.minute,
-        "lon": birth.lon,
-        "tz_offset": offset,
-        "jd": base_positions["Julian_Day"] # This is required for Ahargana!
+        "hour": birth.hour, "minute": birth.minute,
+        "lon": birth.lon, "tz_offset": offset,
+        "jd": base_positions["Julian_Day"] 
     }
     
-    shadbala_report = calculate_shadbala(base_positions, varga_positions, birth_time)
+    # <-- PASSED 'lang' -->
+    shadbala_report = calculate_shadbala(base_positions, varga_positions, birth_time, birth.lang)
     
-    return {
-        "status": "success",
-        "data": shadbala_report
-    }
+    return {"status": "success", "data": shadbala_report}
 
 
 @app.get("/health")

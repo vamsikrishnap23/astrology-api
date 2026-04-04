@@ -1,4 +1,5 @@
 from utils import ZODIAC_SIGNS
+from features.translator import translate
 
 def get_varga_sign_index(varga_type: int, base_sign: int, degree_in_sign: float) -> int:
     """
@@ -82,7 +83,7 @@ def get_varga_sign_index(varga_type: int, base_sign: int, degree_in_sign: float)
     else:
         return (base_sign + part) % 12
 
-def calculate_single_varga(chart_data: dict, varga_type: int) -> dict:
+def calculate_single_varga(chart_data: dict, varga_type: int, lang: str = "en") -> dict:
     varga_chart = {}
     
     for key, data in chart_data.items():
@@ -131,8 +132,10 @@ def calculate_single_varga(chart_data: dict, varga_type: int) -> dict:
         s = (m_decimal - m) * 60
         
         varga_chart[key] = {
+            "name": translate(key, "planet", lang), 
+            "short_name": translate(key, "planet_short", lang), # <-- NEW
             "sign_index": varga_sign_index,
-            "sign_name": ZODIAC_SIGNS[varga_sign_index],
+            "sign_name": translate(ZODIAC_SIGNS[varga_sign_index], "zodiac", lang), 
             "degree": d,
             "minute": m,
             "second": round(s, 2)
@@ -144,7 +147,7 @@ def calculate_single_varga(chart_data: dict, varga_type: int) -> dict:
         
     return varga_chart
 
-def calculate_all_vargas(chart_data: dict) -> dict:
+def calculate_all_vargas(chart_data: dict, lang: str = "en") -> dict:
     """
     Generates the complete Shodashavarga array (All 16 charts).
     """
@@ -155,6 +158,6 @@ def calculate_all_vargas(chart_data: dict) -> dict:
     
     for v_num in vargas_to_calculate:
         chart_name = f"D{v_num}"
-        all_charts[chart_name] = calculate_single_varga(chart_data, v_num)
+        all_charts[chart_name] = calculate_single_varga(chart_data, v_num, lang)
         
     return all_charts

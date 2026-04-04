@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import calendar
 import swisseph as swe
+from features.translator import translate # <-- ADDED IMPORT
 
 DASHA_LORDS = [
     ("Ketu", 7.0), ("Venus", 20.0), ("Sun", 6.0), ("Moon", 10.0),
@@ -34,7 +35,8 @@ def add_vedic_period(start_dt: datetime, period_years: float) -> datetime:
     # 3. Add remaining exact days
     return base_dt + timedelta(days=d)
 
-def calculate_antardashas(md_lord_index: int, start_dt: datetime, md_years: float) -> list:
+# <-- ADDED 'lang' PARAMETER -->
+def calculate_antardashas(md_lord_index: int, start_dt: datetime, md_years: float, lang: str = "en") -> list:
     """Calculates sub-periods using the exact proportion of the calendar."""
     ad_list = []
     current_dt = start_dt
@@ -48,7 +50,7 @@ def calculate_antardashas(md_lord_index: int, start_dt: datetime, md_years: floa
         end_dt = add_vedic_period(current_dt, ad_length_years)
         
         ad_list.append({
-            "lord": ad_lord,
+            "lord": translate(ad_lord, "planet", lang), # <-- TRANSLATED LORD
             "start_date": current_dt.strftime("%Y-%m-%d"),
             "end_date": end_dt.strftime("%Y-%m-%d")
         })
@@ -56,7 +58,8 @@ def calculate_antardashas(md_lord_index: int, start_dt: datetime, md_years: floa
         
     return ad_list
 
-def calculate_dashas(chart_data: dict) -> list:
+# <-- ADDED 'lang' PARAMETER -->
+def calculate_dashas(chart_data: dict, lang: str = "en") -> list:
     """Calculates the True Origin Mahadasha timeline."""
     moon_lon = chart_data["Moon"]["longitude_360"]
     jd_birth = chart_data["Julian_Day"]
@@ -89,10 +92,12 @@ def calculate_dashas(chart_data: dict) -> list:
         md_lord, md_years = DASHA_LORDS[current_md_index]
         
         md_end_dt = add_vedic_period(current_dt, md_years)
-        antardashas = calculate_antardashas(current_md_index, current_dt, md_years)
+        
+        # <-- PASSED 'lang' DOWN TO ANTARDASHAS
+        antardashas = calculate_antardashas(current_md_index, current_dt, md_years, lang) 
         
         timeline.append({
-            "lord": md_lord,
+            "lord": translate(md_lord, "planet", lang), # <-- TRANSLATED LORD
             "start_date": current_dt.strftime("%Y-%m-%d"),
             "end_date": md_end_dt.strftime("%Y-%m-%d"),
             "antardashas": antardashas

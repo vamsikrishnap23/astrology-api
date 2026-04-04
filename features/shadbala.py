@@ -1,5 +1,6 @@
 # features/shadbala.py
 import math
+from features.translator import translate
 # Deep Exaltation Points (in 360-degree continuous format)
 # Sun: Aries 10°, Moon: Taurus 3°, Mars: Capricorn 28°, 
 # Mercury: Virgo 15°, Jupiter: Cancer 5°, Venus: Pisces 27°, Saturn: Libra 20°
@@ -532,7 +533,7 @@ def calculate_drik_bala(chart_data: dict) -> dict:
 
 
 
-def calculate_shadbala(chart_data: dict, vargas: dict, birth_time: dict) -> dict:
+def calculate_shadbala(chart_data: dict, vargas: dict, birth_time: dict, lang: str = "en") -> dict:
     """
     The Complete Shadbala Master Controller.
     Calculates and sums all 6 Pillars of Planetary Strength.
@@ -598,34 +599,37 @@ def calculate_shadbala(chart_data: dict, vargas: dict, birth_time: dict) -> dict
         
         # 60 Virupas = 1 Rupa
         total_shadbala_rupas[p] = round(total / 60.0, 2)
+
+        def tr_dict(d: dict) -> dict:
+            return {translate(k, "planet", lang): v for k, v in d.items()}
     
     # --- Return Final Payload ---
     return {
         "Summary": {
-            "Total_Shadbala_Virupas": total_shadbala_virupas,
-            "Total_Shadbala_Rupas": total_shadbala_rupas
+            "Total_Shadbala_Virupas": tr_dict(total_shadbala_virupas),
+            "Total_Shadbala_Rupas": tr_dict(total_shadbala_rupas)
         },
         "Sthana_Bala": {
-            "Total": sthana_bala_total,
+            "Total": tr_dict(sthana_bala_total),
             "Breakdown": {
-                "Uchcha_Bala": uchcha,
-                "Saptavargaja_Bala": sapta,
-                "Ojayugmarasyamsa_Bala": ojayugma,
-                "Kendra_Bala": kendra,
-                "Drekkana_Bala": drekkana
+                "Uchcha_Bala": tr_dict(uchcha),
+                "Saptavargaja_Bala": tr_dict(sapta),
+                "Ojayugmarasyamsa_Bala": tr_dict(ojayugma),
+                "Kendra_Bala": tr_dict(kendra),
+                "Drekkana_Bala": tr_dict(drekkana)
             }
         },
-        "Dig_Bala": dig_bala,
+        "Dig_Bala": tr_dict(dig_bala),
         "Kala_Bala": {
-            "Total_Partial": kala_bala_total,
+            "Total_Partial": tr_dict(kala_bala_total),
             "Breakdown": {
-                "Nathonnatha_Bala": nathonnatha,
-                "Paksha_Bala": paksha,
-                "Tribhaga_Bala": tribhaga,
-                "Time_Lords_Bala": time_lords
+                "Nathonnatha_Bala": tr_dict(nathonnatha),
+                "Paksha_Bala": tr_dict(paksha),
+                "Tribhaga_Bala": tr_dict(tribhaga),
+                "Time_Lords_Bala": tr_dict(time_lords)
             }
         },
-        "Chesta_Bala": chesta_bala,
-        "Naisargika_Bala": naisargika_bala,
-        "Drik_Bala": drik_bala
+        "Chesta_Bala": tr_dict(chesta_bala),
+        "Naisargika_Bala": tr_dict(naisargika_bala),
+        "Drik_Bala": tr_dict(drik_bala)
     }
