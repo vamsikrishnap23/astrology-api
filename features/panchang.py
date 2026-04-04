@@ -1,5 +1,6 @@
 import swisseph as swe
 from utils import jd_to_utc_time
+from features.translator import translate  # <-- ADDED TRANSLATION IMPORT
 
 # --- Sanskrit Dictionaries ---
 TITHIS = [
@@ -37,7 +38,8 @@ def get_karana_name(index: int) -> str:
         return fixed_end[index - 57]
     return MOVABLE_KARANAS[(index - 1) % 7]
 
-def calculate_panchang(chart_data: dict, lat: float, lon: float) -> dict:
+# <-- ADDED 'lang' PARAMETER HERE
+def calculate_panchang(chart_data: dict, lat: float, lon: float, lang: str = "en") -> dict:
     """Calculates all detailed Panchang limbs including Padam and Sunrise."""
     
     sun_lon = chart_data["Sun"]["longitude_360"]
@@ -82,17 +84,25 @@ def calculate_panchang(chart_data: dict, lat: float, lon: float) -> dict:
     sunrise_jd = rise_calc[1][0]
     sunset_jd = set_calc[1][0]
 
+    # --- NEW TRANSLATION LOGIC ---
+    final_vara = translate(VARAS[vara_index], "vara", lang)
+    final_paksha = translate(paksham, "paksha", lang)
+    final_tithi = translate(TITHIS[tithi_index], "tithi", lang)
+    final_yoga = translate(YOGAS[yoga_index], "yoga", lang)
+    final_karana = translate(get_karana_name(karana_index), "karana", lang)
+    final_nakshatra = translate(nakshatram_name, "nakshatra", lang) # If you add TE_NAKSHATRA later
+
     return {
-        "Paksham": paksham,
-        "Vara": VARAS[vara_index],
-        "Tithi": TITHIS[tithi_index],
+        "Paksham": final_paksha,
+        "Vara": final_vara,
+        "Tithi": final_tithi,
         "Nakshatram": {
-            "name": nakshatram_name,
+            "name": final_nakshatra,
             "padam": padam,
-            "full_format": f"{nakshatram_name}-{padam}"
+            "full_format": f"{final_nakshatra}-{padam}"
         },
-        "Yogam": YOGAS[yoga_index],
-        "Karanam": get_karana_name(karana_index),
+        "Yogam": final_yoga,
+        "Karanam": final_karana,
         "Sunrise": jd_to_utc_time(sunrise_jd),
         "Sunset": jd_to_utc_time(sunset_jd)
     }

@@ -19,7 +19,7 @@ def get_panchang(birth: BirthDetails):
     base_positions = calculate_base_positions(birth)
     
     # 2. Pass base planets AND location data to the new Panchang calculator
-    panchang_data = calculate_panchang(base_positions, birth.lat, birth.lon)
+    panchang_data = calculate_panchang(base_positions, birth.lat, birth.lon, birth.lang)
     
     return {"status": "success", "data": panchang_data}
 
